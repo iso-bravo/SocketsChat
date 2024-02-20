@@ -8,19 +8,53 @@
     <title>Chat</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        form {background: rgba(0, 0, 0, 15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px);}
+        body {padding: 5rem;}
+        form {padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 4rem; box-sizing: border-box; backdrop-filter: blur(10px);}
         ul {list-style-type: none; margin: 0; padding: 0;}
-        ul > li {padding: 0.5rem 1rem;}
-        ul > li:nth-child(odd) {background: #dcf8c6; text-align: right; font-style: italic; font-weight: 600;}
+        ul > li {padding: 1rem 1.5rem; font-weight: 600; border-radius: 10px; margin-top: 1rem;}
+        .my-message {background-color: #3636ff; text-align: right; font-style: italic; color: #FFFFFF; margin-left: 66%;}
+        .other-message {background-color: #a19f9f; text-align: left; font-style: italic; color: #FFFFFF; margin-right: 66%;}
     </style>
   </head>
   <body>
-    <ul class = "list-group"></ul>
+    <h1 class="text-center">IsoChat</h1>
+    <ul class="list-group" id="messageList"></ul>
     <form action="">
         <input type="text" class="form-control" placeholder="Ingrese un mensaje">
-        <button class="btn btn-primary">Enviar</button>
+        <button type="submit" class="btn btn-primary">Enviar</button>
     </form>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
 
+    <script>
+        let socket = io()
+        const form = document.querySelector('form')
+        const input = document.querySelector('input')
+        let mensajes = document.getElementById('messageList');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+            if (input.value) {
+                socket.emit('chat', input.value)
+                input.value = ''
+            }
+        })
+
+        socket.on('chat', (data) => {
+            console.log('chat', data)
+            let item = document.createElement('li');
+            const parsedData = JSON.parse(data);
+            console.log(parsedData)
+            if (parsedData.id === socket.id) {
+                item.classList.add('my-message');
+            } else {
+                item.classList.add('other-message');
+            }
+
+            item.textContent = parsedData.msg;
+            mensajes.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        })
+    </script>
   </body>
 </html>
